@@ -26,7 +26,7 @@ public class CustomHashMap<T> {
         }
     }
 
-    public CustomHashMap() {
+     public CustomHashMap() {
         this.tamanho = 16;
         tabela = new LinkedList[tamanho];
         for (int i = 0; i < tamanho; i++) {
@@ -42,7 +42,7 @@ public class CustomHashMap<T> {
         if ((double) numElementos / tamanho >= DEFAULT_LOAD_FACTOR) {
             resize();
         }
-
+        
         Dado<T> dado = new Dado<>(key, value);
         int indice = funcaoHash(key);
         tabela[indice].add(dado);
@@ -81,15 +81,8 @@ public class CustomHashMap<T> {
         return null;
     }
 
-    public boolean replace(long key, T value) {
-        int indice = funcaoHash(key);
-        for (Dado<T> item : tabela[indice]) {
-            if (item.chave == key) {
-                item.valor = value;
-                return true;
-            }
-        }
-        return false;
+    public void replace(long key, T value) {
+
     }
 
 
