@@ -1,101 +1,70 @@
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.time.LocalDate;
 import java.util.Scanner;
 
 public class App {
 
-        private static void carregarCSV(String arquivo, CustomHashMap<String> hashTable) {
-        File file = new File(arquivo);
-        try (Scanner fscan = new Scanner(file)) {
-            while (fscan.hasNextLine()) {
-                String line = fscan.nextLine().trim();
-                if (line.isEmpty()) continue;
-                String[] parts = line.split(",", 2);
-                if (parts.length < 2) continue;
-                try {
-                    long chave = Long.parseLong(parts[0].trim());
-                    String nome = parts[1].trim();
-                    hashTable.put(chave, nome);
-                } catch (NumberFormatException e) {
-                }
-            }
-        } catch (FileNotFoundException e) {
-            System.out.println("Arquivo nao encontrado: " + arquivo);
-        }
+
+    public static Cupom lerCupom(Scanner sc) {
+        System.out.print("Código do cupom: ");
+        long codigo = sc.nextLong();
+        System.out.print("Percentual de desconto: ");
+        double desconto = sc.nextDouble();
+        System.out.print("Data de validade (AAAA-MM-DD): ");
+        LocalDate dataValidade = LocalDate.parse(sc.next());
+        return new Cupom(codigo, desconto, dataValidade);
     }
-    
-     private static int menu(Scanner scanner) {
-        System.out.println("\t\t*** IFSULDEMINAS - CAMPUS MACHADO ***");
+
+    private static int menu(Scanner scanner) {
+        System.out.println("\n\t\t*** IFSULDEMINAS - CAMPUS MACHADO ***");
         System.out.println("\t\t*** Estrutura de Dados I ***");
         System.out.println("\t\t*** HASH ENCADEADO - Separate Chaining ***");
-        System.out.println("1-Inserir");
-        System.out.println("2-Remover");
-        System.out.println("3-Buscar");
-        System.out.println("4-Alterar");
-        System.out.println("0-Sair");
+        System.out.println("1 - Cadastrar cupom");
+        System.out.println("3 - Usar cupom");
+        System.out.println("0 - Sair");
         System.out.print("Escolha uma opcao: ");
         return scanner.nextInt();
     }
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        CustomHashMap<String> meuHashMap = new CustomHashMap<>();
-        System.out.print("Arquivo CSV para carregar (enter para pular): ");
-        String arquivo = scanner.nextLine().trim();
-        if (!arquivo.isEmpty()) {
-            carregarCSV(arquivo, meuHashMap);
-        }
+        CustomHashMap<Cupom> meuHashMap = new CustomHashMap<>();
+
         int op;
         do {
-            System.out.println(meuHashMap.toString());
-            System.out.println("Pressione Enter para continuar...");
-            scanner.nextLine(); // Aguarda pressionar Enter
             op = menu(scanner);
             switch (op) {
-                case 1:
-                    System.out.print("Entre com a chave: ");
-                    long chave = scanner.nextLong();
-                    scanner.nextLine(); // Limpar o buffer
-                    System.out.print("Entre com o objeto: ");
-                    String nome = scanner.nextLine();
-                    meuHashMap.put(chave, nome);
-                    break;
 
-                case 2:
-                    System.out.print("Chave para remover: ");
-                    chave = scanner.nextLong();
-                    scanner.nextLine(); // Limpar o buffer
-                    boolean removeu = meuHashMap.remove(chave);
-                    if (!removeu) {
-                        System.out.println("Chave nao existente para remocao");
-                    } else {
-                        System.out.println("Chave removida com sucesso! :)");
-                    }
+                case 1:
+
+                    Cupom cupom = lerCupom(scanner);
+                    meuHashMap.put(cupom.getCodigo(), cupom);
+                    System.out.println("Cupom cadastrado: " + cupom);
                     break;
 
                 case 3:
-                    System.out.print("Chave para busca: ");
-                    chave = scanner.nextLong();
-                    scanner.nextLine(); // Limpar o buffer
-                    boolean encontrado = meuHashMap.containsKey(chave);
-                    if (!encontrado) {
-                        System.out.println("Chave nao encontrada :(");
-                    } else {
-                        System.out.println("Chave encontrada!");
-                    }
-                    break;
 
-                case 4:
-                    System.out.print("Chave para alterar: ");
-                    chave = scanner.nextLong();
-                    scanner.nextLine(); // Limpar o buffer
-                    System.out.print("Novo valor: ");
-                    String novoValor = scanner.nextLine();
-                    if (meuHashMap.containsKey(chave)) {
-                        meuHashMap.put(chave, novoValor);
-                        System.out.println("Valor alterado com sucesso! :)");
-                    } else {
-                        System.out.println("Chave nao encontrada para alteracao :(");
+                    System.out.print("Cupom para uso: ");
+                    long codigo = scanner.nextLong();
+
+                    Cupom encontrado = meuHashMap.get(codigo);
+
+                    if (encontrado == null) {
+                        System.out.println("Cupom não encontrado!");
+                        break;
                     }
+
+                    System.out.println("Desconto encontrado: " + encontrado.getDesconto());
+
+                    if (encontrado.getDataValidade().isBefore(LocalDate.now())) {
+                        System.out.println("Cupom vencido!");
+                    } else {
+                        System.out.print("Cupom válido - Valor da compra: ");
+                        double valorCompra = scanner.nextDouble();
+                        double desconto = valorCompra * encontrado.getDesconto() / 100;
+                        double valorFinal = valorCompra - desconto;
+                        System.out.printf("Valor com desconto: %.2f%n", valorFinal);
+                    }
+                    System.out.println("----------------------------------------------");
                     break;
 
                 case 0:
@@ -106,7 +75,7 @@ public class App {
                     System.out.println("Opcao invalida.");
                     break;
             }
-            
+
         } while (op != 0);
 
         scanner.close();
